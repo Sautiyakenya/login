@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Login — Sauti Ya Kanisa Kenya</title>
+<style>
+  :root {
+    --green: #1b7a3e;
+    --green-dark: #0f5b2c;
+    --green-pale: #e6f3ea;
+    --ink: #1c2420;
+    --muted: #5c6a62;
+    --border: #dcebe1;
+    --error: #b3261e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(160deg, var(--green) 0%, var(--green-dark) 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .login-card {
+    background: #fff;
+    width: 100%;
+    max-width: 380px;
+    border-radius: 16px;
+    padding: 38px 34px 32px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+    animation: rise .35s ease both;
+  }
+  @keyframes rise { from { opacity:0; transform: translateY(10px);} to {opacity:1; transform:none;} }
+  .login-emblem {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(15,91,44,0.25);
+  }
+  .login-emblem img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  h1 {
+    text-align: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--green-dark);
+  }
+  .sub {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 6px;
+    margin-bottom: 26px;
+  }
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--green-dark);
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.92rem;
+    font-family: Arial, sans-serif;
+    color: var(--ink);
+    background: #fbfdfc;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(27,122,62,0.15);
+  }
+  .btn-login {
+    width: 100%;
+    margin-top: 24px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  .btn-login:hover { background: var(--green-dark); }
+  .btn-login:active { transform: scale(0.98); }
+  .error-msg {
+    display: none;
+    margin-top: 16px;
+    background: #fdeceb;
+    border: 1px solid #f3c6c2;
+    color: var(--error);
+    font-size: 0.8rem;
+    padding: 9px 12px;
+    border-radius: 8px;
+  }
+  .error-msg.show { display: block; }
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 22px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--green-dark); }
+  .note {
+    margin-top: 22px;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<form class="login-card" id="loginForm" autocomplete="off">
+  <div class="login-emblem"><img src="Logo.png" alt="SKK Logo"></div>
+  <h1>Staff Login</h1>
+  <p class="sub">Sign in to access the Ministers Dashboard and Verification records.</p>
+
+  <label for="username">Username</label>
+  <input type="text" id="username" name="username" placeholder="Enter your username" autocomplete="username" required>
+
+  <label for="password">Password</label>
+  <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+
+  <div class="error-msg" id="errorMsg">Incorrect username or password. Please try again.</div>
+
+  <button type="submit" class="btn-login">Log In</button>
+
+  <a class="back-link" href="index.html">&larr; Back to the SKK website</a>
+  <p class="note">Access is limited to authorised SKK staff and ministry leaders.</p>
+</form>
+
+<script src="assets/auth-config.js"></script>
+<script>
+(function () {
+  var form = document.getElementById('loginForm');
+  var errorMsg = document.getElementById('errorMsg');
+
+  // If already logged in, skip straight to the intended page.
+  try {
+    if (sessionStorage.getItem('skk_auth') === 'granted') {
+      redirectAfterLogin();
+    }
+  } catch (e) {}
+
+  function redirectAfterLogin() {
+    var params = new URLSearchParams(location.search);
+    var target = params.get('redirect');
+    location.href = target ? target : 'SKK_Ministers_Dashboard.html';
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var u = document.getElementById('username').value.trim();
+    var p = document.getElementById('password').value;
+    var users = (typeof SKK_AUTH_USERS !== 'undefined') ? SKK_AUTH_USERS : [];
+    var match = users.some(function (acct) {
+      return acct.user.toLowerCase() === u.toLowerCase() && acct.pass === p;
+    });
+    if (match) {
+      try {
+        sessionStorage.setItem('skk_auth', 'granted');
+        sessionStorage.setItem('skk_user', u);
+      } catch (e) {}
+      errorMsg.classList.remove('show');
+      redirectAfterLogin();
+    } else {
+      errorMsg.classList.add('show');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
